@@ -1,31 +1,60 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import { createStore, combineReducers } from 'redux';
-import { Provider } from 'react-redux';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { createStore, combineReducers, applyMiddleware } from "redux";
+import { Provider } from "react-redux";
+import logger from "redux-logger";
+import createSagaMiddleware from "redux-saga";
+import axios from "axios";
 
-import App from './App';
+import { takeEvery, put } from "redux-saga/effects";
 
-// this startingPlantArray should eventually be removed
-const startingPlantArray = [
-  { id: 1, name: 'Rose' },
-  { id: 2, name: 'Tulip' },
-  { id: 3, name: 'Oak' }
-];
+import App from "./App";
 
-const plantList = (state = startingPlantArray, action) => {
+const plantList = (state = [], action) => {
   switch (action.type) {
-    case 'ADD_PLANT':
-      return [ ...state, action.payload ]
+    case "SET_PLANTS":
+      return action.payload;
+    case "ADD_PLANT_REDUCER":
+      return [...state, action.payload];
     default:
       return state;
   }
 };
 
+function* fetchPlants() {
+  try {
+    const plantsResponse = yield axios.get("/api/plant");
+    yield put({ type: "SET_PLANTS", payload: plantsResponse.data });
+  } catch (error) {
+    console.log("error fetching plants", error);
+  }
+}
+
+function * addPlant(action) {
+  try {
+    const newPlantData = action.payload
+    const plantsResponse = yield axios.post("/api/plant", newPlantData);
+    yield put({ type: "ADD_PLANT_REDUCER" , payload: plantsResponse.data })
+  } catch (error) {
+    console.log("Error adding plant", error);
+  }
+}
+
+function* rootSaga() {
+  yield takeEvery("FETCH_PLANTS", fetchPlants);
+  yield takeEvery("ADD_PLANT", addPlant)
+}
+
+const sagaMiddleware = createSagaMiddleware();
+
 const store = createStore(
   combineReducers({ plantList }),
+  applyMiddleware(sagaMiddleware, logger)
 );
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
+sagaMiddleware.run(rootSaga);
+
+const root = ReactDOM.createRoot(document.getElementById("root"));
 root.render(
   <React.StrictMode>
     <Provider store={store}>
