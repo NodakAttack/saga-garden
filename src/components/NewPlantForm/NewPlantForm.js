@@ -41,14 +41,19 @@ const NewPlantForm = () => {
         event.preventDefault();
         dispatch({ type: 'ADD_PLANT', payload: newPlant });
         dispatch({ type: "FETCH_PLANTS"})
-        //updates the next plant to have a new id
+        // do i need?
     }
+
+
+
+
+    
     return (
         <div>
             <h3>This is the form</h3>
             <pre>{JSON.stringify(newPlant)}</pre>
             <form onSubmit={addNewPlant}>
-                <input type='text' value={newPlant.name} onChange={handleNameChange} placeholder='Name'/> <br/>
+                <input type='text' value={newPlant.name} onChange={handleNameChange} placeholder='Name'/><br/>
                 <input type='text' value={newPlant.kingdom} onChange={handleKingdomChange} placeholder='Kingdom'/> <br/>
                 <input type='text' value={newPlant.clade} onChange={handleCladeChange} placeholder='Clade'/> <br/>
                 <input type='text' value={newPlant.order} onChange={handleOrderChange} placeholder='Order'/> <br/>

@@ -16,6 +16,8 @@ const plantList = (state = [], action) => {
       return action.payload;
     case "ADD_PLANT_REDUCER":
       return [...state, action.payload];
+    case "DELETE_PLANT_REDUCER":
+      return state.filter((plant) => plant.id !== action.payload);
     default:
       return state;
   }
@@ -40,9 +42,20 @@ function * addPlant(action) {
   }
 }
 
+function * deletePlant(action) {
+  try {
+    const id = action.payload;
+    yield axios.delete(`/api/plant/${id}`);
+    yield put ({ type: "DELETE_PLANT_REDUCER" , payload: id})
+  } catch (error) {
+    console.log("Error deleting plant", error);
+  }
+}
+
 function* rootSaga() {
   yield takeEvery("FETCH_PLANTS", fetchPlants);
-  yield takeEvery("ADD_PLANT", addPlant)
+  yield takeEvery("ADD_PLANT", addPlant);
+  yield takeEvery("DELETE_PLANT", deletePlant);
 }
 
 const sagaMiddleware = createSagaMiddleware();
